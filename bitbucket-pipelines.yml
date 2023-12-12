@@ -1,0 +1,21 @@
+image: docker:latest
+
+pipelines:
+  default:
+    - step:
+        name: Build and Run Docker Container
+        script:
+          - docker build -t my_docker_image -f Dockerfile .
+          - docker run my_docker_image
+
+    - step:
+        name: Run CMake
+        script:
+          - mkdir build
+          - cd build
+          - cmake ..
+
+    - step:
+        name: Run Tests
+        script:
+          - ctest
