@@ -25,7 +25,7 @@ int main() {
     }
     std::cout << std::endl;
   }
-  EncodeData object_copy = unpack(array.data());
+  EncodeData object_copy = unpack(array);
   for (auto elem : object_copy.data) {
     std::cout << static_cast<int>(elem) << " ";
   }

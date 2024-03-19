@@ -4,26 +4,43 @@
 #include <string>
 #include <vector>
 
+using encoded_bytes = std::vector<unsigned char>;
+using tag = unsigned char;
+using size_type = int;
+using index_type = int;
+
 struct EncodeData {
-  std::vector<unsigned char> data;
+  encoded_bytes data;
   std::string key;
   std::string vec;
   std::string algorithm_name;
   bool encode;
 };
 
-int counting_size_from_bytes(unsigned char array[], int);
+class Serializing {
+ public:
+  void set_bytes(encoded_bytes byte_array) { bytes = byte_array; }
+  void set_object(EncodeData en_object) { object = en_object; }
+  encoded_bytes serialize_object_to_bytes();
+  EncodeData serialize_bytes_to_object();
 
-int counting_size_from_tag(unsigned char);
+ private:
+  EncodeData object;
+  encoded_bytes bytes;
 
-void making_string(unsigned char array[], int&, int&, std::string&);
+  int counting_size_from_bytes(index_type);
 
-EncodeData unpack(unsigned char array[]);
+  int counting_size_from_tag(tag);
 
-void counting_size_to_bytes(std::vector<unsigned char>& array, int);
+  std::string making_string(index_type&, size_type&);
 
-void string_tag(std::vector<unsigned char>& array, int);
+  void counting_size_to_bytes(size_type);
 
-void writing_string(std::vector<unsigned char>& array, std::string);
+  void string_tag(size_type);
 
-std::vector<unsigned char> pack(EncodeData);
+  void writing_string(std::string);
+};
+
+EncodeData unpack(encoded_bytes);
+
+encoded_bytes pack(EncodeData);
