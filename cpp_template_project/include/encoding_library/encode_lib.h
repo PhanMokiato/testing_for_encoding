@@ -4,26 +4,28 @@
 #include <string>
 #include <vector>
 
+#include "encode_constants.h"
+
 using encoded_bytes = std::vector<unsigned char>;
 using tag = unsigned char;
 using size_type = int;
 using index_type = int;
 
-constexpr int eighth_bit = 128;
-constexpr int seventh_bit = 64;
-constexpr int sixth_bit = 32;
-constexpr int fifth_bit = 16;
-constexpr int fourth_bit = 8;
-constexpr int third_bit = 4;
-constexpr int second_bit = 2;
-constexpr int first_bit = 1;
-constexpr unsigned char bool_true_tag = 32;
-constexpr unsigned char bool_false_tag = 64;
-constexpr unsigned char start_end_tag = 0;
-constexpr int bits = 8;
-constexpr int bits_for_size = 4;
-constexpr unsigned char undefined_type_tag = 20;
-constexpr int first_six_bytes = 6;
+// constexpr int eighth_bit = 128;
+// constexpr int seventh_bit = 64;
+// constexpr int sixth_bit = 32;
+// constexpr int fifth_bit = 16;
+// constexpr int fourth_bit = 8;
+// constexpr int third_bit = 4;
+// constexpr int second_bit = 2;
+// constexpr int first_bit = 1;
+// constexpr unsigned char bool_true_tag = 32;
+// constexpr unsigned char bool_false_tag = 64;
+// constexpr unsigned char start_end_tag = 0;
+// constexpr int bits = 8;
+// constexpr int bytes_for_size = 4;
+// constexpr unsigned char undefined_type_tag = 20;
+// constexpr int first_six_bytes = 6;
 
 struct EncodeData {
   encoded_bytes data;
@@ -56,9 +58,9 @@ class Serializing {
 
   void writing_string_tag(size_type);
 
-  void writing_string(std::string);
+  void writing_string(std::string&);
 };
 
-EncodeData unpack(encoded_bytes);
+EncodeData unpack(encoded_bytes&);
 
-encoded_bytes pack(EncodeData);
+encoded_bytes pack(EncodeData&);

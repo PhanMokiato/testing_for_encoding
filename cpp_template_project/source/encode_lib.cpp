@@ -2,36 +2,27 @@
 
 #include <algorithm>
 #include <cmath>
+#include <span>
 #include <string>
 #include <vector>
 
+#include "encode_constants.h"
+
 int Serializing::counting_size_from_bytes(int index) {
-  int data_size = 0;
-  int size = index - bits_for_size;
-  for (int i = 0; index > size; --index, ++i) {
-    for (int k = eighth_bit; k > 0; k = k / 2) {
-      if (bytes[index] & k) {
-        data_size += k * pow(2, bits * i);
-      }
-    }
-  }
-  return data_size;
+  return (int)(bytes[index - 3] << (en_const::bits * 3) |
+               bytes[index - 2] << (en_const::bits * 2) |
+               bytes[index - 1] << (en_const::bits) | bytes[index]);
+  ;
 }
 
 int Serializing::counting_size_from_tag(unsigned char size) {
-  int data_size = 0;
-  for (int k = fourth_bit; k > 0; k = k / 2) {
-    if (size & k) {
-      data_size += k;
-    }
-  }
-  return data_size;
+  return (int)(size - en_const::seventh_bit - en_const::sixth_bit);
 }
 
 std::string Serializing::making_string(int& start_index, int& data_size) {
   std::string name;
-  if (bytes[start_index + data_size] & fifth_bit) {
-    start_index = start_index + data_size + 5;
+  if (bytes[start_index + data_size] & en_const::fifth_bit) {
+    start_index = start_index + data_size + en_const::bytes_for_size + 1;
     data_size = counting_size_from_bytes(start_index - 1);
   } else {
     start_index = start_index + data_size + 1;
@@ -48,11 +39,11 @@ std::string Serializing::making_string(int& start_index, int& data_size) {
 }
 
 bool Serializing::translate_bool_tag(int index) {
-  return bytes[index] == bool_true_tag;
+  return bytes[index] == en_const::bool_true_tag;
 }
 
 EncodeData Serializing::serialize_bytes_to_object() {
-  int start_index = first_six_bytes;
+  int start_index = en_const::first_six_bytes;
   int data_size = counting_size_from_bytes(start_index - 1);
   object.data.assign(bytes.begin() + start_index,
                      bytes.begin() + start_index + data_size);
@@ -63,28 +54,26 @@ EncodeData Serializing::serialize_bytes_to_object() {
   return object;
 }
 
-EncodeData unpack(std::vector<unsigned char> bytes) {
+EncodeData unpack(std::vector<unsigned char>& bytes) {
   Serializing helper;
   helper.set_bytes(bytes);
   return helper.serialize_bytes_to_object();
 }
 
 void Serializing::counting_size_to_bytes(int data_size) {
-  for (int i = 3; i >= 0; --i) {
-    unsigned char elem = 0;
-    for (int k = pow(2, bits * (i + 1) - 1); k > 0; k = k / 2) {
-      if (data_size & k) {
-        elem += k / pow(2, bits * i);
-      }
-    }
-    bytes.push_back(elem);
-  }
+  int buffer[1]{data_size};
+  auto const data = std::as_writable_bytes(std::span{buffer});
+  bytes.resize(bytes.size() + en_const::bytes_for_size);
+  std::transform(std::rbegin(data), std::rend(data),
+                 bytes.end() - en_const::bytes_for_size, [&](std::byte byte) {
+                   return static_cast<unsigned char>(byte);
+                 });
 }
 
 void Serializing::writing_string_tag(int data_size) {
-  unsigned char string_type_tag = seventh_bit + sixth_bit;
-  if (data_size >= fifth_bit) {
-    string_type_tag += fifth_bit + third_bit;
+  unsigned char string_type_tag = en_const::seventh_bit + en_const::sixth_bit;
+  if (data_size >= en_const::fifth_bit) {
+    string_type_tag += en_const::fifth_bit + en_const::third_bit;
     bytes.push_back(string_type_tag);
     counting_size_to_bytes(data_size);
   } else {
@@ -93,7 +82,7 @@ void Serializing::writing_string_tag(int data_size) {
   }
 }
 
-void Serializing::writing_string(std::string name) {
+void Serializing::writing_string(std::string& name) {
   writing_string_tag(name.length());
   auto adding_char_from_string_to_bytes = [this](const char& ch) {
     unsigned char elem = static_cast<unsigned char>(ch);
@@ -103,8 +92,8 @@ void Serializing::writing_string(std::string name) {
 }
 
 encoded_bytes Serializing::serialize_object_to_bytes() {
-  bytes.push_back(start_end_tag);
-  bytes.push_back(undefined_type_tag);
+  bytes.push_back(en_const::start_end_tag);
+  bytes.push_back(en_const::undefined_type_tag);
   int data_size = object.data.size();
   counting_size_to_bytes(data_size);
   bytes.insert(bytes.end(), object.data.begin(), object.data.end());
@@ -112,15 +101,15 @@ encoded_bytes Serializing::serialize_object_to_bytes() {
   writing_string(object.vec);
   writing_string(object.algorithm_name);
   if (object.encode) {
-    bytes.push_back(bool_true_tag);
+    bytes.push_back(en_const::bool_true_tag);
   } else {
-    bytes.push_back(bool_false_tag);
+    bytes.push_back(en_const::bool_false_tag);
   }
-  bytes.push_back(start_end_tag);
+  bytes.push_back(en_const::start_end_tag);
   return bytes;
 }
 
-std::vector<unsigned char> pack(EncodeData object) {
+std::vector<unsigned char> pack(EncodeData& object) {
   Serializing helper;
   helper.set_object(object);
   return helper.serialize_object_to_bytes();

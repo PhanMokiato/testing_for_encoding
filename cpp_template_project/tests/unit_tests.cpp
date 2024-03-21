@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "encode_constants.h"
 #include "encode_lib.h"
 
 TEST(working_with_encode_data, pack) {
@@ -19,8 +20,10 @@ TEST(working_with_encode_data, pack) {
   EXPECT_EQ(0, our_bytes[0]);
   EXPECT_EQ(0, our_bytes.back());
   EXPECT_EQ(20, our_bytes[1]);
-  EXPECT_EQ(seventh_bit + sixth_bit + second_bit + first_bit, our_bytes[9]);
-  EXPECT_EQ(bool_false_tag, our_bytes[49]);
+  EXPECT_EQ(en_const::seventh_bit + en_const::sixth_bit + en_const::second_bit +
+                en_const::first_bit,
+            our_bytes[9]);
+  EXPECT_EQ(en_const::bool_false_tag, our_bytes[49]);
 }
 
 TEST(working_with_encode_data, unpack) {
@@ -41,4 +44,5 @@ TEST(working_with_encode_data, unpack) {
   EXPECT_EQ("key", object_copy.key);
   EXPECT_EQ("vec", object_copy.vec);
   EXPECT_EQ("Algorithm name for encoding", object_copy.algorithm_name);
+  EXPECT_EQ(false, object_copy.encode);
 }
