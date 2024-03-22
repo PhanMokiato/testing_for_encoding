@@ -42,13 +42,20 @@ bool Serializing::translate_bool_tag(int index) {
   return bytes[index] == en_const::bool_true_tag;
 }
 
+void Serializing::making_byte_array(int& start_index, int& data_size,
+                                    std::vector<unsigned char>& data_bytes) {
+  start_index = start_index + data_size + en_const::bytes_for_size + 1;
+  data_size = counting_size_from_bytes(start_index - 1);
+  data_bytes.assign(bytes.begin() + start_index,
+                    bytes.begin() + start_index + data_size);
+}
+
 EncodeData Serializing::serialize_bytes_to_object() {
-  int start_index = en_const::first_six_bytes;
-  int data_size = counting_size_from_bytes(start_index - 1);
-  object.data.assign(bytes.begin() + start_index,
-                     bytes.begin() + start_index + data_size);
-  object.key = making_string(start_index, data_size);
-  object.vec = making_string(start_index, data_size);
+  int start_index = 1;
+  int data_size = 0;
+  making_byte_array(start_index, data_size, object.data);
+  making_byte_array(start_index, data_size, object.key);
+  making_byte_array(start_index, data_size, object.vec);
   object.algorithm_name = making_string(start_index, data_size);
   object.encode = translate_bool_tag(start_index + data_size);
   return object;
@@ -91,14 +98,18 @@ void Serializing::writing_string(std::string& name) {
   std::for_each(name.begin(), name.end(), adding_char_from_string_to_bytes);
 }
 
+void Serializing::writing_byte_array(std::vector<unsigned char>& data_bytes) {
+  bytes.push_back(en_const::undefined_type_tag);
+  int data_size = data_bytes.size();
+  counting_size_to_bytes(data_size);
+  bytes.insert(bytes.end(), data_bytes.begin(), data_bytes.end());
+}
+
 encoded_bytes Serializing::serialize_object_to_bytes() {
   bytes.push_back(en_const::start_end_tag);
-  bytes.push_back(en_const::undefined_type_tag);
-  int data_size = object.data.size();
-  counting_size_to_bytes(data_size);
-  bytes.insert(bytes.end(), object.data.begin(), object.data.end());
-  writing_string(object.key);
-  writing_string(object.vec);
+  writing_byte_array(object.data);
+  writing_byte_array(object.key);
+  writing_byte_array(object.vec);
   writing_string(object.algorithm_name);
   if (object.encode) {
     bytes.push_back(en_const::bool_true_tag);

@@ -6,12 +6,10 @@
 
 int main() {
   EncodeData object;
-  object.data.push_back(3);
-  object.data.push_back(4);
-  object.data.push_back(56);
-  object.key = "key";
-  object.vec = "vec";
-  object.algorithm_name = "Algorithm name for encoding";
+  object.data = {1, 2, 3};
+  object.key = {'k', 'e', 'y'};
+  object.vec = {'v', 'e', 'c'};
+  object.algorithm_name = "AES";
   object.encode = false;
   std::vector<unsigned char> array = pack(object);
   for (int i = 0; i < array.size(); ++i) {
@@ -30,8 +28,14 @@ int main() {
     std::cout << static_cast<int>(elem) << " ";
   }
   std::cout << std::endl;
-  std::cout << object_copy.key << std::endl;
-  std::cout << object_copy.vec << std::endl;
+  for (auto elem : object_copy.key) {
+    std::cout << elem;
+  }
+  std::cout << std::endl;
+  for (auto elem : object_copy.vec) {
+    std::cout << elem;
+  }
+  std::cout << std::endl;
   std::cout << object_copy.algorithm_name << std::endl;
   std::cout << object_copy.encode << std::endl;
   return 0;

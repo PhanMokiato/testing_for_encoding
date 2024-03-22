@@ -13,8 +13,8 @@ using index_type = int;
 
 struct EncodeData {
   encoded_bytes data;
-  std::string key;
-  std::string vec;
+  encoded_bytes key;
+  encoded_bytes vec;
   std::string algorithm_name;
   bool encode;
 };
@@ -38,9 +38,13 @@ class Serializing {
 
   bool translate_bool_tag(index_type);
 
+  void making_byte_array(index_type&, size_type&, encoded_bytes&);
+
   void counting_size_to_bytes(size_type);
 
   void writing_string_tag(size_type);
+
+  void writing_byte_array(encoded_bytes&);
 
   void writing_string(std::string&);
 };
